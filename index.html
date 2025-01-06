@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard Học Tiếng Anh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        .flashcards-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .flashcard {
+            width: 250px;
+            height: 180px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            position: relative;
+        }
+        .flashcard .front, .flashcard .back {
+            position: absolute;
+            backface-visibility: hidden;
+            padding: 20px;
+        }
+        .flashcard .back {
+            transform: rotateY(180deg);
+        }
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+        .form-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        input {
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            padding: 5px 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tạo Flashcard Học Tiếng Anh</h1>
+    <div class="form-container">
+        <input type="text" id="question" placeholder="Nhập từ vựng...">
+        <input type="text" id="answer" placeholder="Nhập nghĩa...">
+        <button onclick="createFlashcard()">Tạo Flashcard</button>
+    </div>
+
+    <div class="flashcards-container" id="flashcards-container"></div>
+
+    <script>
+        // Tải flashcard từ Local Storage khi trang mở
+        window.onload = function() {
+            loadFlashcards();
+        };
+
+        // Hàm tạo flashcard mới
+        function createFlashcard() {
+            const question = document.getElementById('question').value;
+            const answer = document.getElementById('answer').value;
+
+            if (question && answer) {
+                const flashcardData = { id: Date.now(), question, answer };
+                saveToLocalStorage(flashcardData);
+                addFlashcardToPage(flashcardData);
+                
+                // Reset input
+                document.getElementById('question').value = '';
+                document.getElementById('answer').value = '';
+            } else {
+                alert('Vui lòng nhập cả câu hỏi và đáp án!');
+            }
+        }
+
+        // Lưu flashcard vào Local Storage
+        function saveToLocalStorage(flashcard) {
+            let flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+            flashcards.push(flashcard);
+            localStorage.setItem('flashcards', JSON.stringify(flashcards));
+        }
+
+        // Hiển thị flashcard lên trang
+        function addFlashcardToPage(flashcardData) {
+            const container = document.getElementById('flashcards-container');
+            const flashcard = document.createElement('div');
+            flashcard.classList.add('flashcard');
+            flashcard.setAttribute('data-id', flashcardData.id);
+            
+            flashcard.innerHTML = `
+                <div class="front">${flashcardData.question}</div>
+                <div class="back">${flashcardData.answer}</div>
+                <button class="delete-btn" onclick="deleteFlashcard(${flashcardData.id})">Xóa</button>
+            `;
+            
+            flashcard.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('delete-btn')) {
+                    flashcard.classList.toggle('flipped');
+                }
+            });
+
+            container.appendChild(flashcard);
+        }
+
+        // Tải flashcards từ Local Storage
+        function loadFlashcards() {
+            const flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+            flashcards.forEach(flashcardData => {
+                addFlashcardToPage(flashcardData);
+            });
+        }
+
+        // Xóa flashcard khỏi trang và Local Storage
+        function deleteFlashcard(id) {
+            let flashcards = JSON.parse(localStorage.getItem('flashcards')) || [];
+            flashcards = flashcards.filter(flashcard => flashcard.id !== id);
+            localStorage.setItem('flashcards', JSON.stringify(flashcards));
+            
+            const flashcardElement = document.querySelector(`.flashcard[data-id="${id}"]`);
+            if (flashcardElement) {
+                flashcardElement.remove();
+            }
+        }
+    </script>
+
+</body>
+</html>
